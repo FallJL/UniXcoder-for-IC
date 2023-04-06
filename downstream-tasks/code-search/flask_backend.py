@@ -266,7 +266,8 @@ def prepare_data():
     np.save('numpy_CSN_python_codebase', code_vecs)
     '''
 
-    code_vecs = np.load('numpy_CSN_python_codebase.npy')
+    # just load .npy file
+    code_vecs = np.load('npy/CSN/python/numpy_CSN_python_codebase.npy')
 
     # return data
     return {"tokenizer": tokenizer, "args": args, "model": model,
