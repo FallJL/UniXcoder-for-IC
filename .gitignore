@@ -131,3 +131,5 @@ dmypy.json
 # custom
 downstream-tasks/code-search/dataset/
 npy/
+.idea
+saved_models/

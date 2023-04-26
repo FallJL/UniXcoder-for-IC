@@ -87,10 +87,10 @@ def compute_content_and_code_similarity(content, tokenizer, args, model, code_ve
         nl_vec = model(nl_inputs=nl_input)  # output query vector through the model
         nl_vec = nl_vec.cpu().numpy()
 
-    print("nl_vec.shape:", nl_vec.shape)
+    # print("nl_vec.shape:", nl_vec.shape)
     score = np.matmul(nl_vec, code_vecs.T)  # 通过矩阵乘法得到查询对应的每一个代码的相似度得分
     sort_ids = np.argsort(score, axis=-1, kind='quicksort', order=None)[:,::-1]  # 按照相似度降序排序，返回的为索引列表
-    print("sort_ids.shape:", sort_ids.shape)
+    # print("sort_ids.shape:", sort_ids.shape)
 
     searched_code = []
     for idx in sort_ids[0, :5]:
@@ -291,14 +291,14 @@ app.data = prepare_data()
 
 @app.route('/codeAI/get-code-search-list', methods=['GET'])
 def get_code_search_list():
-    print('request.args:', request.args)
-    print('content:', request.args.get('content'))
+    # print('request.args:', request.args)
+    # print('content:', request.args.get('content'))
     content = request.args.get('content')
 
     data = app.data
     searched_code = compute_content_and_code_similarity(content, data["tokenizer"], data["args"], data["model"],
                                                         data["code_vecs"], data["code_dataset"])
-    print("searched_code:", searched_code)
+    # print("searched_code:", searched_code)
     return jsonify({'code': searched_code})
 
 
