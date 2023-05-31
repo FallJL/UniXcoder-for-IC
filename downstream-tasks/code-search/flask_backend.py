@@ -12,6 +12,10 @@ import logging
 import os
 import pickle
 import random
+import urllib
+import re
+
+import requests
 import torch
 import json
 import numpy as np
@@ -284,6 +288,56 @@ def prepare_data():
 #                       "}"
 #     return jsonify({'code': searched_all_code})
 
+
+def translate_to_english(text):
+    """
+    中文翻译为英文（使用http请求，调用有道翻译）
+    """
+    url = 'http://fanyi.youdao.com/translate'
+    data = {
+        'i': text,
+        'from': 'zh-CHS',
+        'to': 'en',
+        'smartresult': 'dict',
+        'client': 'fanyideskweb',
+        'salt': '16216671697475',
+        'sign': '4b12fe85554d481a2d40331d2b07847f',
+        'ts': '1621667169747',
+        'bv': 'cda1e53e0c0eb8dd4002cefc117fa588',
+        'doctype': 'json',
+        'version': '2.1',
+        'keyfrom': 'fanyi.web',
+        'action': 'FY_BY_REALTlME'
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Referer': 'http://fanyi.youdao.com/',
+        'Origin': 'http://fanyi.youdao.com',
+        'Host': 'fanyi.youdao.com'
+    }
+
+    response = requests.post(url, data=data, headers=headers)
+    response_data = json.loads(response.text)
+    translation = response_data['translateResult'][0][0]['tgt']
+
+    return translation
+
+
+def is_contain_chinese(check_str):
+    """
+    判断一个字符串中是否包含中文字符
+    :param check_str: {str} 需要检测的字符串
+    :return: {bool} 包含返回True， 不包含返回False
+    """
+    pattern = re.compile('[\u4e00-\u9fa5]+')
+    match = pattern.search(check_str)
+    if match:
+        return True
+    else:
+        return False
+
+
 # start Flask
 app = Flask(__name__)
 app.data = prepare_data()
@@ -294,6 +348,11 @@ def get_code_search_list():
     # print('request.args:', request.args)
     # print('content:', request.args.get('content'))
     content = request.args.get('content')
+    print("翻译前：", content)
+    if is_contain_chinese(content):
+        print("包含中文")
+        content = translate_to_english(content)
+    print("翻译后：", content)
 
     data = app.data
     searched_code = compute_content_and_code_similarity(content, data["tokenizer"], data["args"], data["model"],
